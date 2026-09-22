@@ -408,6 +408,7 @@ document.querySelectorAll('.touch-btn').forEach(btn => {
     }
   });
   btn.addEventListener('mousedown', e => {
+    e.preventDefault();
     const action = btn.dataset.action;
     switch(action) {
       case 'left': moveLeft(); break;

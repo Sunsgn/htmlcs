@@ -240,15 +240,15 @@ function drawRod(){
   }
 }
 
-// ========== 3D鱼绘制系统 ==========
+// ========== 3D鱼绘制系统（优化版）==========
 function drawFish3D(x,y,scale,dir,type,animPhase,glow){
   ctx.save();
   ctx.translate(x,y);
   ctx.scale(dir*scale,scale);
-  ctx.rotate(Math.sin(animPhase)*0.08);
+  ctx.rotate(Math.sin(animPhase)*0.06);
 
   const t=Date.now()*0.003;
-  const tailSwing=Math.sin(t+animPhase)*0.25;
+  const tailSwing=Math.sin(t+animPhase)*0.2;
 
   switch(type){
     case '草鱼': drawGrassFish(tailSwing,glow);break;
@@ -263,30 +263,235 @@ function drawFish3D(x,y,scale,dir,type,animPhase,glow){
 }
 
 function drawGrassFish(tail,glow){
-  // 阴影
-  ctx.fillStyle='rgba(0,20,10,0.3)';
-  ctx.beginPath();
-  ctx.ellipse(2,4,28,12,0,0,Math.PI*2);
-  ctx.fill();
-
-  // 鱼身渐变（3D立体感）
-  const body=ctx.createRadialGradient(-5,-3,2,0,0,28);
-  body.addColorStop(0,'#b8e890');
-  body.addColorStop(0.3,'#8ac060');
-  body.addColorStop(0.7,'#5a9030');
-  body.addColorStop(1,'#2a4818');
+  // 鱼身
+  const body=ctx.createLinearGradient(0,-10,0,10);
+  body.addColorStop(0,'#a0d870');
+  body.addColorStop(1,'#408020');
   ctx.fillStyle=body;
   ctx.beginPath();
-  ctx.ellipse(0,0,28,11,0,0,Math.PI*2);
+  ctx.ellipse(0,0,26,10,0,0,Math.PI*2);
   ctx.fill();
 
   // 高光
-  ctx.fillStyle='rgba(200,240,180,0.4)';
+  ctx.fillStyle='rgba(180,230,150,0.5)';
   ctx.beginPath();
-  ctx.ellipse(-8,-4,12,4,-0.2,0,Math.PI*2);
+  ctx.ellipse(-6,-3,10,3,0,0,Math.PI*2);
   ctx.fill();
 
-  // 鱼鳞纹理
+  // 尾巴
+  ctx.save();
+  ctx.translate(-26,0);
+  ctx.rotate(tail);
+  ctx.fillStyle='#508030';
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.lineTo(-14,-10);
+  ctx.lineTo(-14,10);
+  ctx.fill();
+  ctx.restore();
+
+  // 鱼鳍
+  ctx.fillStyle='rgba(80,140,50,0.7)';
+  ctx.beginPath();
+  ctx.moveTo(-2,-10);
+  ctx.lineTo(4,-16);
+  ctx.lineTo(8,-10);
+  ctx.fill();
+
+  drawFishEye(16,0);
+}
+
+function drawCrucianFish(tail,glow){
+  const body=ctx.createLinearGradient(0,-10,0,10);
+  body.addColorStop(0,'#c0c8d0');
+  body.addColorStop(1,'#606870');
+  ctx.fillStyle=body;
+  ctx.beginPath();
+  ctx.ellipse(0,0,22,9,0,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle='rgba(200,210,220,0.5)';
+  ctx.beginPath();
+  ctx.ellipse(-5,-3,8,3,0,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(-22,0);
+  ctx.rotate(tail);
+  ctx.fillStyle='#606870';
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.lineTo(-12,-9);
+  ctx.lineTo(-12,9);
+  ctx.fill();
+  ctx.restore();
+
+  drawFishEye(14,0);
+}
+
+function drawCarpFish(tail,glow){
+  const body=ctx.createLinearGradient(0,-10,0,10);
+  body.addColorStop(0,'#f0c050');
+  body.addColorStop(1,'#a06020');
+  ctx.fillStyle=body;
+  ctx.beginPath();
+  ctx.ellipse(0,0,24,10,0,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle='rgba(240,200,80,0.5)';
+  ctx.beginPath();
+  ctx.ellipse(-5,-3,9,3,0,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(-24,0);
+  ctx.rotate(tail);
+  ctx.fillStyle='#a06020';
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.lineTo(-13,-10);
+  ctx.lineTo(-13,10);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle='rgba(180,120,40,0.7)';
+  ctx.beginPath();
+  ctx.moveTo(-3,-10);
+  ctx.lineTo(4,-17);
+  ctx.lineTo(8,-10);
+  ctx.fill();
+
+  drawFishEye(16,0);
+}
+
+function drawOctopus(tail,glow){
+  const t=Date.now()*0.004;
+
+  // 头部
+  const head=ctx.createLinearGradient(0,-12,0,8);
+  head.addColorStop(0,'#d080e0');
+  head.addColorStop(1,'#602070');
+  ctx.fillStyle=head;
+  ctx.beginPath();
+  ctx.ellipse(0,-2,16,14,0,0,Math.PI*2);
+  ctx.fill();
+
+  // 触手
+  ctx.strokeStyle='#804090';
+  ctx.lineWidth=3;
+  ctx.lineCap='round';
+  for(let i=0;i<5;i++){
+    const sx=-8+i*4;
+    const wave=Math.sin(t+i)*5;
+    ctx.beginPath();
+    ctx.moveTo(sx,10);
+    ctx.quadraticCurveTo(sx+wave,18,sx+wave,26);
+    ctx.stroke();
+  }
+
+  // 眼睛
+  ctx.fillStyle='#fff';
+  ctx.beginPath();
+  ctx.arc(-6,-4,4,0,Math.PI*2);
+  ctx.arc(6,-4,4,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle='#201030';
+  ctx.beginPath();
+  ctx.arc(-6,-3,2,0,Math.PI*2);
+  ctx.arc(6,-3,2,0,Math.PI*2);
+  ctx.fill();
+}
+
+function drawKoiFish(tail,glow){
+  const body=ctx.createLinearGradient(0,-10,0,10);
+  body.addColorStop(0,'#ff8080');
+  body.addColorStop(1,'#cc3030');
+  ctx.fillStyle=body;
+  ctx.beginPath();
+  ctx.ellipse(0,0,26,11,0,0,Math.PI*2);
+  ctx.fill();
+
+  // 白斑
+  ctx.fillStyle='rgba(255,255,255,0.6)';
+  ctx.beginPath();
+  ctx.ellipse(4,-2,7,4,0.3,0,Math.PI*2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(-8,2,5,3,-0.2,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(-26,0);
+  ctx.rotate(tail);
+  ctx.fillStyle='#cc3030';
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.lineTo(-15,-12);
+  ctx.lineTo(-15,12);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle='rgba(255,80,80,0.8)';
+  ctx.beginPath();
+  ctx.moveTo(-4,-11);
+  ctx.lineTo(3,-18);
+  ctx.lineTo(9,-11);
+  ctx.fill();
+
+  drawFishEye(17,0);
+}
+
+function drawShark(tail,glow){
+  const body=ctx.createLinearGradient(0,-12,0,12);
+  body.addColorStop(0,'#6090c0');
+  body.addColorStop(1,'#203850');
+  ctx.fillStyle=body;
+  ctx.beginPath();
+  ctx.ellipse(0,0,32,12,0,0,Math.PI*2);
+  ctx.fill();
+
+  // 肚皮
+  ctx.fillStyle='rgba(160,190,210,0.5)';
+  ctx.beginPath();
+  ctx.ellipse(2,4,24,5,0,0,Math.PI);
+  ctx.fill();
+
+  // 背鳍
+  ctx.fillStyle='#305070';
+  ctx.beginPath();
+  ctx.moveTo(0,-12);
+  ctx.lineTo(6,-22);
+  ctx.lineTo(10,-12);
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(-32,0);
+  ctx.rotate(tail*0.7);
+  ctx.fillStyle='#305070';
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.lineTo(-16,-14);
+  ctx.lineTo(-16,14);
+  ctx.fill();
+  ctx.restore();
+
+  // 眼睛
+  ctx.fillStyle='#20ff40';
+  ctx.beginPath();
+  ctx.arc(22,-2,2,0,Math.PI*2);
+  ctx.fill();
+}
+
+function drawFishEye(x,y){
+  ctx.fillStyle='#fff';
+  ctx.beginPath();
+  ctx.arc(x,y,3,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle='#101820';
+  ctx.beginPath();
+  ctx.arc(x+0.5,y,1.5,0,Math.PI*2);
+  ctx.fill();
+}
   ctx.strokeStyle='rgba(100,160,60,0.3)';
   ctx.lineWidth=0.5;
   for(let i=0;i<5;i++){
@@ -663,14 +868,12 @@ function drawFishEye(x,y,r){
 }
 
 function drawFishGlow(){
-  ctx.shadowColor='rgba(0,200,255,0.4)';
-  ctx.shadowBlur=15;
-  ctx.strokeStyle='rgba(0,200,255,0.3)';
+  // 简化版：只画边框，不发光
+  ctx.strokeStyle='rgba(0,200,255,0.4)';
   ctx.lineWidth=2;
   ctx.beginPath();
   ctx.ellipse(0,0,32,15,0,0,Math.PI*2);
   ctx.stroke();
-  ctx.shadowBlur=0;
 }
 
 function drawFishes(){
@@ -720,39 +923,32 @@ function drawForceBar(){
   // 绿色安全区（圆弧片段）
   const gzStartAngle=startAngle+totalAngle*greenZone.start;
   const gzEndAngle=startAngle+totalAngle*greenZone.end;
-  ctx.strokeStyle='rgba(0,255,120,0.4)';
+  ctx.strokeStyle='rgba(0,255,120,0.5)';
   ctx.lineWidth=lineWidth+2;
   ctx.beginPath();
   ctx.arc(cx,cy,radius,gzStartAngle,gzEndAngle);
   ctx.stroke();
 
-  // 外框发光
-  ctx.shadowColor='rgba(0,180,255,0.3)';
-  ctx.shadowBlur=12;
-  ctx.strokeStyle='rgba(0,120,200,0.4)';
+  // 外框
+  ctx.strokeStyle='rgba(0,120,200,0.5)';
   ctx.lineWidth=lineWidth+4;
   ctx.beginPath();
   ctx.arc(cx,cy,radius,startAngle,endAngle);
   ctx.stroke();
-  ctx.shadowBlur=0;
 
   // 指针（沿弧线移动）
   const cursorAngle=startAngle+totalAngle*cursorPos;
   const pointerX=cx+Math.cos(cursorAngle)*radius;
   const pointerY=cy+Math.sin(cursorAngle)*radius;
 
-  // 指针发光
   const inZone=cursorPos>=greenZone.start&&cursorPos<=greenZone.end;
-  ctx.fillStyle=inZone?'rgba(0,255,150,1)':'rgba(255,255,255,0.9)';
-  ctx.shadowColor=inZone?'rgba(0,255,150,0.8)':'rgba(255,255,255,0.5)';
-  ctx.shadowBlur=15;
+  ctx.fillStyle=inZone?'#00ff88':'#fff';
   ctx.beginPath();
   ctx.arc(pointerX,pointerY,8,0,Math.PI*2);
   ctx.fill();
-  ctx.shadowBlur=0;
 
   // 标签
-  ctx.fillStyle='rgba(0,200,255,0.6)';
+  ctx.fillStyle='rgba(0,200,255,0.7)';
   ctx.font='11px Microsoft YaHei';
   ctx.textAlign='center';
   ctx.fillText('力 度',cx,cy+radius+25);
@@ -779,15 +975,12 @@ function drawProgressBar(){
   ctx.arc(cx,cy,radius,startAngle,endAngle);
   ctx.stroke();
 
-  // 外框发光
-  ctx.shadowColor='rgba(0,180,255,0.3)';
-  ctx.shadowBlur=12;
-  ctx.strokeStyle='rgba(0,120,200,0.4)';
+  // 外框
+  ctx.strokeStyle='rgba(0,120,200,0.5)';
   ctx.lineWidth=lineWidth+4;
   ctx.beginPath();
   ctx.arc(cx,cy,radius,startAngle,endAngle);
   ctx.stroke();
-  ctx.shadowBlur=0;
 
   // 进度圆弧
   const fill=Math.min(progress/progressTarget,1);
@@ -803,12 +996,9 @@ function drawProgressBar(){
     ctx.strokeStyle=gradient;
     ctx.lineWidth=lineWidth;
     ctx.lineCap='round';
-    ctx.shadowColor='rgba(0,255,150,0.5)';
-    ctx.shadowBlur=10;
     ctx.beginPath();
     ctx.arc(cx,cy,radius,startAngle,fillAngle);
     ctx.stroke();
-    ctx.shadowBlur=0;
   }
 
   // 鱼形图标（沿弧线移动）

@@ -441,14 +441,8 @@ function beep(f0, f1, dur, type, vol){
 
 /* ============ helpers ============ */
 function rr(x,y,w,h,r){
-  r = Math.min(r, w/2, h/2);
   ctx.beginPath();
-  ctx.moveTo(x+r, y);
-  ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
-  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
-  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
-  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
-  ctx.closePath();
+  ctx.rect(x,y,w,h);
 }
 function say(t){ live.textContent = t; }
 
@@ -788,8 +782,10 @@ function loop(now){
     acc += dt;
     var iv = interval();
     while(acc >= iv && state === 'playing'){ acc -= iv; step(); }
+    draw(now);
+  }else if(state === 'ready' || state === 'paused'){
+    draw(now);
   }
-  draw(now);
   requestAnimationFrame(loop);
 }
 

@@ -8,9 +8,9 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{overflow:hidden;background:#000;font-family:'Courier New',monospace;user-select:none}
 canvas{display:block}
-#blocker{position:fixed;top:0;left:0;right:0;bottom:0;z-index:100;background:rgba(0,0,0,.82);
-  display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(3px)}
-#blocker h1{font-size:2.5rem;color:#e8c547;text-shadow:3px 3px 0 #000;letter-spacing:.15em;margin-bottom:.8rem;line-height:1.3;text-align:center}
+#blocker{position:fixed;top:0;left:0;right:0;bottom:0;z-index:100;background:rgba(0,0,0,.9);
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+#blocker h1{font-size:2.5rem;color:#e8c547;letter-spacing:.15em;margin-bottom:.8rem;line-height:1.3;text-align:center}
 #blocker .sub{color:#8a8070;font-size:.75rem;margin-bottom:1.5rem;text-align:center}
 #blocker .keys{color:#5a5545;font-size:.5rem;line-height:2.2;text-align:center}
 #crosshair{position:fixed;top:50%;left:50%;z-index:10;pointer-events:none;width:0;height:0}
@@ -22,17 +22,17 @@ canvas{display:block}
 #hotbar{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);display:flex;z-index:10;
   padding:2px;background:rgba(0,0,0,.55);border:2px solid rgba(140,140,140,.5);border-radius:2px}
 .slot{width:46px;height:46px;border:2px solid rgba(70,70,70,.7);display:flex;align-items:center;justify-content:center;position:relative}
-.slot.active{border-color:#fff;box-shadow:inset 0 0 8px rgba(255,255,255,.1)}
+.slot.active{border-color:#fff}
 .slot canvas{image-rendering:pixelated;width:36px;height:36px}
-.slot .count{position:absolute;bottom:1px;right:3px;color:#fff;font-size:.5rem;text-shadow:1px 1px 0 #000}
-#bname{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);color:#fff;font-size:.6rem;z-index:10;text-shadow:1px 1px 0 #000}
-#hp{position:fixed;bottom:60px;left:8px;z-index:10;font-size:.75rem;text-shadow:1px 1px 0 #000;letter-spacing:2px}
-#info{position:fixed;top:4px;left:4px;color:rgba(255,255,255,.55);font-size:.42rem;z-index:10;text-shadow:1px 1px 0 rgba(0,0,0,.8);line-height:1.8;white-space:pre}
+.slot .count{position:absolute;bottom:1px;right:3px;color:#fff;font-size:.5rem}
+#bname{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);color:#fff;font-size:.6rem;z-index:10}
+#hp{position:fixed;bottom:60px;left:8px;z-index:10;font-size:.75rem;letter-spacing:2px}
+#info{position:fixed;top:4px;left:4px;color:rgba(255,255,255,.55);font-size:.42rem;z-index:10;line-height:1.8;white-space:pre}
 
 /* ── Crafting UI ── */
 #craft-ui{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(30,28,22,.96);
   border:3px solid #8a7a50;padding:16px;z-index:200;display:none;max-height:70vh;overflow-y:auto;min-width:350px}
-#craft-ui h3{color:#e8c547;text-align:center;margin-bottom:10px;text-shadow:1px 1px 0 #000;font-size:.85rem}
+#craft-ui h3{color:#e8c547;text-align:center;margin-bottom:10px;font-size:.85rem}
 .recipe{display:flex;align-items:center;padding:5px 8px;margin:4px 0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);gap:8px}
 .recipe.disabled{opacity:.35}
 .recipe canvas{width:32px;height:32px;flex-shrink:0}
@@ -48,15 +48,15 @@ canvas{display:block}
 /* ── Inventory UI ── */
 #inv-ui{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(30,28,22,.96);
   border:3px solid #8a7a50;padding:16px;z-index:200;display:none}
-#inv-ui h3{color:#e8c547;text-align:center;margin-bottom:12px;text-shadow:1px 1px 0 #000;font-size:.8rem;letter-spacing:.12em}
+#inv-ui h3{color:#e8c547;text-align:center;margin-bottom:12px;font-size:.8rem;letter-spacing:.12em}
 .inv-grid{display:grid;grid-template-columns:repeat(9,46px);gap:2px}
 .inv-sep{height:2px;background:rgba(140,120,80,.25);margin:12px 0}
 .inv-slot{width:46px;height:46px;border:2px solid rgba(70,70,70,.7);display:flex;align-items:center;
   justify-content:center;position:relative;cursor:pointer;background:rgba(255,255,255,.03)}
 .inv-slot:hover{border-color:#aaa;background:rgba(255,255,255,.08)}
-.inv-slot.sel{border-color:#e8c547;box-shadow:0 0 6px rgba(232,197,71,.3)}
+.inv-slot.sel{border-color:#e8c547}
 .inv-slot canvas{image-rendering:pixelated;width:36px;height:36px;pointer-events:none}
-.inv-slot .cnt{position:absolute;bottom:1px;right:3px;color:#fff;font-size:.5rem;text-shadow:1px 1px 0 #000;pointer-events:none}
+.inv-slot .cnt{position:absolute;bottom:1px;right:3px;color:#fff;font-size:.5rem;pointer-events:none}
 #cursor-item{display:none;position:fixed;pointer-events:none;z-index:300;width:36px;height:36px;image-rendering:pixelated}
 #inv-close{display:block;margin:12px auto 0;background:#555;border:none;color:#ddd;padding:6px 20px;
   cursor:pointer;font-family:inherit;font-size:.6rem}
