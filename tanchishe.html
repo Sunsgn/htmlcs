@@ -247,10 +247,10 @@ h2.state{font-family:var(--disp);font-size:28px;font-weight:600;line-height:1.1;
 <body>
 <div id="mobile-pad">
   <div style="display:grid;grid-template-columns:repeat(3,70px);grid-template-rows:repeat(2,70px);gap:10px">
-    <button onclick="queueDir(0,-1)" style="grid-column:2;grid-row:1;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▲</button>
-    <button onclick="queueDir(-1,0)" style="grid-column:1;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">◀</button>
-    <button onclick="queueDir(0,1)" style="grid-column:2;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▼</button>
-    <button onclick="queueDir(1,0)" style="grid-column:3;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▶</button>
+    <button data-dx="0" data-dy="-1" style="grid-column:2;grid-row:1;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▲</button>
+    <button data-dx="-1" data-dy="0" style="grid-column:1;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">◀</button>
+    <button data-dx="0" data-dy="1" style="grid-column:2;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▼</button>
+    <button data-dx="1" data-dy="0" style="grid-column:3;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▶</button>
   </div>
 </div>
 <a class="back-home" href="index.html" aria-label="返回首页">←</a>
@@ -809,6 +809,7 @@ function queueDir(x, y){
   if(state !== 'playing') return;
   if(queue.length < 2) queue.push({x:x, y:y});
 }
+window._snakeDir = queueDir;
 
 window.addEventListener('keydown', function(e){
   var k = e.key;
@@ -897,7 +898,23 @@ boot();
 })();
 </script>
 <script>
-function showMobilePad(){var mp=document.getElementById('mobile-pad');if(window.innerWidth<=700){mp.style.display='block';}else{mp.style.display='none';}}
+function showMobilePad(){
+  var mp=document.getElementById('mobile-pad');
+  var show=window.innerWidth<=700;
+  mp.style.display=show?'block':'none';
+  if(show && !mp._bound){
+    mp._bound=true;
+    mp.querySelectorAll('button').forEach(function(btn){
+      function handler(e){
+        e.preventDefault();e.stopPropagation();
+        var dx=parseInt(btn.dataset.dx),dy=parseInt(btn.dataset.dy);
+        if(window._snakeDir) window._snakeDir(dx,dy);
+      }
+      btn.addEventListener('touchstart',handler,{passive:false});
+      btn.addEventListener('mousedown',handler);
+    });
+  }
+}
 showMobilePad();
 window.addEventListener('resize',showMobilePad);
 </script>
