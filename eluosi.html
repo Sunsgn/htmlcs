@@ -139,9 +139,23 @@
   #overlay h2{font-size:1.6rem;color:#fff;letter-spacing:4px;font-weight:300}
   #start-btn{padding:12px 40px;font-size:1rem;color:#fff;background:transparent;border:1px solid rgba(255,255,255,.3);border-radius:4px;cursor:pointer;font-family:inherit;letter-spacing:4px;transition:all .3s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
   #start-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.6)}
+  #mobile-pad{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;background:rgba(10,15,25,0.95);padding:16px;border-radius:20px;border:2px solid rgba(0,120,200,0.3);box-shadow:0 4px 20px rgba(0,0,0,0.5)}
 </style>
 </head>
 <body>
+<div id="mobile-pad">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+    <div style="display:flex;gap:10px">
+      <button onclick="doRotate()" style="width:80px;height:60px;font-size:20px;border-radius:14px;border:2px solid rgba(0,150,255,0.4);background:rgba(20,40,60,0.9);color:#c8d0dc;cursor:pointer">↻ 旋转</button>
+      <button onclick="hardDrop()" style="width:80px;height:60px;font-size:20px;border-radius:14px;border:2px solid rgba(0,150,255,0.4);background:rgba(20,40,60,0.9);color:#c8d0dc;cursor:pointer">⤓ 下落</button>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="moveLeft()" style="width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(0,150,255,0.4);background:rgba(20,40,60,0.9);color:#c8d0dc;cursor:pointer">◀</button>
+      <button onclick="moveDown()" style="width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(0,150,255,0.4);background:rgba(20,40,60,0.9);color:#c8d0dc;cursor:pointer">▼</button>
+      <button onclick="moveRight()" style="width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(0,150,255,0.4);background:rgba(20,40,60,0.9);color:#c8d0dc;cursor:pointer">▶</button>
+    </div>
+  </div>
+</div>
 <a class="back-home" href="index.html" aria-label="返回首页">←</a>
 <div id="overlay"><h2>俄罗斯方块</h2><button id="start-btn">开始游戏</button></div>
 <div class="game-container">
@@ -520,23 +534,17 @@ function showOverlay(title, btnText) {
   overlay.querySelector('#start-btn').textContent = btnText;
   overlay.style.display = 'flex';
 }
-</script>
-<div id="mobile-pad" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;background:rgba(10,15,25,0.95);padding:16px;border-radius:20px;border:2px solid rgba(0,120,200,0.3);box-shadow:0 4px 20px rgba(0,0,0,0.5)">
-  <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
-    <div style="display:flex;gap:10px">
-      <button onclick="doRotate()" style="width:80px;height:60px;font-size:20px;border-radius:14px;border:2px solid rgba(0,150,255,0.4);background:rgba(20,40,60,0.9);color:#c8d0dc;cursor:pointer">↻ 旋转</button>
-      <button onclick="hardDrop()" style="width:80px;height:60px;font-size:20px;border-radius:14px;border:2px solid rgba(0,150,255,0.4);background:rgba(20,40,60,0.9);color:#c8d0dc;cursor:pointer">⤓ 下落</button>
-    </div>
-    <div style="display:flex;gap:10px">
-      <button onclick="moveLeft()" style="width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(0,150,255,0.4);background:rgba(20,40,60,0.9);color:#c8d0dc;cursor:pointer">◀</button>
-      <button onclick="moveDown()" style="width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(0,150,255,0.4);background:rgba(20,40,60,0.9);color:#c8d0dc;cursor:pointer">▼</button>
-      <button onclick="moveRight()" style="width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(0,150,255,0.4);background:rgba(20,40,60,0.9);color:#c8d0dc;cursor:pointer">▶</button>
-    </div>
-  </div>
-</div>
-<script>
-if(window.innerWidth<=768){document.getElementById('mobile-pad').style.display='block';}
-window.addEventListener('resize',function(){document.getElementById('mobile-pad').style.display=window.innerWidth<=768?'block':'none';});
+
+function showMobilePad() {
+  var mp = document.getElementById('mobile-pad');
+  if (window.innerWidth <= 768) {
+    mp.style.display = 'block';
+  } else {
+    mp.style.display = 'none';
+  }
+}
+showMobilePad();
+window.addEventListener('resize', showMobilePad);
 </script>
 </body>
 </html>

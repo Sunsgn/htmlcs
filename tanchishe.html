@@ -241,9 +241,18 @@ h2.state{font-family:var(--disp);font-size:28px;font-weight:600;line-height:1.1;
 }
 .back-home{position:fixed;top:10px;left:10px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.45);border:1px solid var(--bd);color:var(--ink);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .back-home:hover{background:rgba(0,0,0,.7)}
+#mobile-pad{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;background:rgba(20,25,20,0.95);padding:16px;border-radius:20px;border:2px solid rgba(100,120,80,0.4);box-shadow:0 4px 20px rgba(0,0,0,0.5)}
 </style>
 </head>
 <body>
+<div id="mobile-pad">
+  <div style="display:grid;grid-template-columns:repeat(3,70px);grid-template-rows:repeat(2,70px);gap:10px">
+    <button onclick="queueDir(0,-1)" style="grid-column:2;grid-row:1;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▲</button>
+    <button onclick="queueDir(-1,0)" style="grid-column:1;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">◀</button>
+    <button onclick="queueDir(0,1)" style="grid-column:2;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▼</button>
+    <button onclick="queueDir(1,0)" style="grid-column:3;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▶</button>
+  </div>
+</div>
 <a class="back-home" href="index.html" aria-label="返回首页">←</a>
 <div class="shell" id="shell">
 
@@ -887,17 +896,10 @@ boot();
 
 })();
 </script>
-<div id="mobile-pad" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;background:rgba(20,25,20,0.95);padding:16px;border-radius:20px;border:2px solid rgba(100,120,80,0.4);box-shadow:0 4px 20px rgba(0,0,0,0.5)">
-  <div style="display:grid;grid-template-columns:repeat(3,70px);grid-template-rows:repeat(2,70px);gap:10px">
-    <button onclick="queueDir(0,-1)" style="grid-column:2;grid-row:1;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▲</button>
-    <button onclick="queueDir(-1,0)" style="grid-column:1;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">◀</button>
-    <button onclick="queueDir(0,1)" style="grid-column:2;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▼</button>
-    <button onclick="queueDir(1,0)" style="grid-column:3;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▶</button>
-  </div>
-</div>
 <script>
-if(window.innerWidth<=700){document.getElementById('mobile-pad').style.display='block';}
-window.addEventListener('resize',function(){document.getElementById('mobile-pad').style.display=window.innerWidth<=700?'block':'none';});
+function showMobilePad(){var mp=document.getElementById('mobile-pad');if(window.innerWidth<=700){mp.style.display='block';}else{mp.style.display='none';}}
+showMobilePad();
+window.addEventListener('resize',showMobilePad);
 </script>
 </body>
 </html>
