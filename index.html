@@ -27,6 +27,8 @@ canvas{display:block}
 #bname{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);color:#fff;font-size:.6rem;z-index:10;text-shadow:1px 1px 0 #000}
 #hp{position:fixed;bottom:60px;left:8px;z-index:10;font-size:.75rem;text-shadow:1px 1px 0 #000;letter-spacing:2px}
 #info{position:fixed;top:4px;left:4px;color:rgba(255,255,255,.55);font-size:.42rem;z-index:10;text-shadow:1px 1px 0 rgba(0,0,0,.8);line-height:1.8;white-space:pre}
+
+/* ── Crafting UI ── */
 #craft-ui{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(30,28,22,.96);
   border:3px solid #8a7a50;padding:16px;z-index:200;display:none;max-height:70vh;overflow-y:auto;min-width:350px}
 #craft-ui h3{color:#e8c547;text-align:center;margin-bottom:10px;text-shadow:1px 1px 0 #000;font-size:.85rem}
@@ -41,6 +43,23 @@ canvas{display:block}
 .recipe button:hover:not(:disabled){background:#6a9a4a}
 #craft-close{display:block;margin:10px auto 0;background:#555;border:none;color:#ddd;padding:6px 20px;cursor:pointer;font-family:inherit;font-size:.6rem}
 #craft-close:hover{background:#666}
+
+/* ── Inventory UI ── */
+#inv-ui{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(30,28,22,.96);
+  border:3px solid #8a7a50;padding:16px;z-index:200;display:none}
+#inv-ui h3{color:#e8c547;text-align:center;margin-bottom:12px;text-shadow:1px 1px 0 #000;font-size:.8rem;letter-spacing:.12em}
+.inv-grid{display:grid;grid-template-columns:repeat(9,46px);gap:2px}
+.inv-sep{height:2px;background:rgba(140,120,80,.25);margin:12px 0}
+.inv-slot{width:46px;height:46px;border:2px solid rgba(70,70,70,.7);display:flex;align-items:center;
+  justify-content:center;position:relative;cursor:pointer;background:rgba(255,255,255,.03)}
+.inv-slot:hover{border-color:#aaa;background:rgba(255,255,255,.08)}
+.inv-slot.sel{border-color:#e8c547;box-shadow:0 0 6px rgba(232,197,71,.3)}
+.inv-slot canvas{image-rendering:pixelated;width:36px;height:36px;pointer-events:none}
+.inv-slot .cnt{position:absolute;bottom:1px;right:3px;color:#fff;font-size:.5rem;text-shadow:1px 1px 0 #000;pointer-events:none}
+#cursor-item{display:none;position:fixed;pointer-events:none;z-index:300;width:36px;height:36px;image-rendering:pixelated}
+#inv-close{display:block;margin:12px auto 0;background:#555;border:none;color:#ddd;padding:6px 20px;
+  cursor:pointer;font-family:inherit;font-size:.6rem}
+#inv-close:hover{background:#666}
 #hurt{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,0,0,.25);pointer-events:none;z-index:50;opacity:0;transition:opacity .15s}
 </style>
 </head>
@@ -49,15 +68,29 @@ canvas{display:block}
 <h1>VOXEL<br>WORLD</h1>
 <p class="sub">Click to play</p>
 <div class="keys">WASD Move &middot; Mouse Look &middot; Space Jump<br>
-L-Click Break/Attack &middot; R-Click Place/Use<br>1&ndash;9 Select &middot; Scroll Cycle &middot; E Close Menu</div>
+L-Click Break/Attack &middot; R-Click Place/Use<br>1&ndash;9 Select &middot; Scroll Cycle<br>
+E Inventory &middot; E-Click Table Craft</div>
 </div></div>
 <div id="crosshair"><i></i><i></i><i></i><i></i></div>
 <div id="hotbar"></div>
 <div id="bname"></div>
 <div id="hp"></div>
 <div id="info"></div>
+
+<!-- Crafting UI -->
 <div id="craft-ui"><h3>&#9874; Crafting Table</h3><div id="craft-list"></div>
 <button id="craft-close" onclick="closeCraft()">Close [E]</button></div>
+
+<!-- Inventory UI -->
+<div id="inv-ui">
+  <h3>&#127890; Inventory</h3>
+  <div class="inv-grid" id="inv-main"></div>
+  <div class="inv-sep"></div>
+  <div class="inv-grid" id="inv-hot"></div>
+  <button id="inv-close" onclick="closeInv()">Close [E]</button>
+</div>
+<canvas id="cursor-item" width="36" height="36"></canvas>
+
 <div id="hurt"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
@@ -66,10 +99,10 @@ L-Click Break/Attack &middot; R-Click Place/Use<br>1&ndash;9 Select &middot; Scr
 if(typeof THREE==='undefined'){
   document.querySelector('#blocker .sub').innerHTML='<b style="color:#f66">Three.js failed to load</b>';throw 0}
 
-/* ═══ CONFIG ═══ */
+/* ═══════ CONFIG ═══════ */
 const CS=16,REACH=5,GRAV=28,JUMP=8.5,WALK=4.5,SPRINT=6.5,SENS=.002,HALF=48,TIL=16,AT=4;
 
-/* ═══ ITEMS ═══ */
+/* ═══════ ITEMS ═══════ */
 const GRASS=1,DIRT=2,STONE=3,WOOD=4,SAND=5,LEAVES=6,COBBLE=7,PLANKS=8,SNOW=9,CRAFT=11;
 const STICK=20,W_PICK=21,W_AXE=22,W_SWORD=23,S_PICK=25,S_AXE=26,S_SWORD=27;
 const ITN={1:'Grass Block',2:'Dirt',3:'Stone',4:'Oak Log',5:'Sand',6:'Leaves',7:'Cobblestone',
@@ -86,7 +119,7 @@ const TPROP={21:{type:'pick',tier:'wood',dmg:2},22:{type:'axe',tier:'wood',dmg:2
   26:{type:'axe',tier:'stone',dmg:3},27:{type:'sword',tier:'stone',dmg:5}};
 const DROP={1:DIRT,2:DIRT,3:COBBLE,4:WOOD,5:SAND,6:0,7:COBBLE,8:PLANKS,9:SNOW,11:CRAFT};
 
-/* ═══ RECIPES ═══ */
+/* ═══════ RECIPES ═══════ */
 const RCP=[
   {o:PLANKS,n:4,r:[[WOOD,1]]},{o:STICK,n:4,r:[[PLANKS,2]]},{o:CRAFT,n:1,r:[[PLANKS,4]]},
   {o:W_PICK,n:1,r:[[PLANKS,3],[STICK,2]]},{o:W_AXE,n:1,r:[[PLANKS,3],[STICK,2]]},
@@ -94,7 +127,7 @@ const RCP=[
   {o:S_PICK,n:1,r:[[COBBLE,3],[STICK,2]]},{o:S_AXE,n:1,r:[[COBBLE,3],[STICK,2]]},
   {o:S_SWORD,n:1,r:[[COBBLE,2],[STICK,1]]}];
 
-/* ═══ NOISE ═══ */
+/* ═══════ NOISE ═══════ */
 const _p=new Uint8Array(512);
 !function(s){const p=new Uint8Array(256);for(let i=0;i<256;i++)p[i]=i;
 for(let i=255;i>0;i--){s=(s*1103515245+12345)&0x7fffffff;const j=s%(i+1);[p[i],p[j]]=[p[j],p[i]]}
@@ -107,7 +140,7 @@ return _l(_l(d(g(X,Y),xf,yf),d(g(X+1,Y),xf-1,yf),u),_l(d(g(X,Y+1),xf,yf-1),d(g(X
 function fbm(x,y,o){o=o||5;let s=0,a=1,f=1,m=0;for(let i=0;i<o;i++){s+=n2(x*f,y*f)*a;m+=a;a*=.5;f*=2}return s/m}
 function h3(x,y,z){let h=(x*374761393+y*668265263+z*1274126177)|0;h=((h^(h>>13))*1274126177)|0;return((h^(h>>16))&0x7fffffff)/0x7fffffff}
 
-/* ═══ TEXTURE ATLAS ═══ */
+/* ═══════ TEXTURE ATLAS ═══════ */
 const AC=document.createElement('canvas');AC.width=AC.height=AT*TIL;
 const ACX=AC.getContext('2d');
 !function(){let x,y,n,dx,dy,rg,ln,v,d,e;
@@ -132,21 +165,20 @@ for(x=0;x<16;x++)for(y=0;y<16;y++){n=h3(x,y,14)*.12;v=155+n*30;
   let r2=v,g2=v*.82,b2=v*.52;
   if(x===0||x===15||y===0||y===15){r2*=.55;g2*=.55;b2*=.55}
   else if(x===7||x===8||y===7||y===8){r2*=.72;g2*=.72;b2*=.72}
-  px(11,x,y,r2,g2,b2)}
-}();
+  px(11,x,y,r2,g2,b2)}}();
 const aTex=new THREE.CanvasTexture(AC);
 aTex.magFilter=THREE.NearestFilter;aTex.minFilter=THREE.NearestFilter;aTex.generateMipmaps=false;
 const EPS=.5/TIL;
 function aUV(t,fu,fv){const c=t%AT,r=(t/AT)|0,u=EPS+fu*(1-2*EPS),v=EPS+fv*(1-2*EPS);
   return[(c+u)/AT,1-(r+1-v)/AT]}
 
-/* ═══ WORLD ═══ */
+/* ═══════ WORLD ═══════ */
 const Wm=new Map(),bk=(x,y,z)=>x+','+y+','+z;
 function gb(x,y,z){return Wm.get(bk(x,y,z))||0}
 function sb(x,y,z,t){if(t)Wm.set(bk(x,y,z),t);else Wm.delete(bk(x,y,z))}
 function gH(x,z){return Math.floor(fbm(x*.003,z*.003,3)*25+fbm(x*.015,z*.015,4)*12+fbm(x*.05,z*.05,3)*3+10)}
 
-/* ═══ TERRAIN ═══ */
+/* ═══════ TERRAIN ═══════ */
 function genWorld(){let x,z,y,h;
   for(x=-HALF;x<HALF;x++)for(z=-HALF;z<HALF;z++){h=gH(x,z);
     for(y=0;y<=h;y++){if(y===h){if(h>30)sb(x,y,z,9);else if(h<11)sb(x,y,z,5);else sb(x,y,z,1)}
@@ -160,7 +192,7 @@ function tree(x,by,z){let y,dx,dz;const th=4+Math.floor(Math.abs(n2(x*3.7,z*3.7)
       if(Math.abs(dx)===r&&Math.abs(dz)===r&&h3(x+dx,y,z+dz)>.5)continue;
       if(gb(x+dx,y,z+dz))continue;sb(x+dx,y,z+dz,6)}}}
 
-/* ═══ FACES + AO ═══ */
+/* ═══════ FACES + AO ═══════ */
 const FA=[
   {d:[0,1,0],c:[[0,1,1],[1,1,1],[1,1,0],[0,1,0]],uv:[[0,0],[1,0],[1,1],[0,1]],k:'t'},
   {d:[0,-1,0],c:[[0,0,0],[1,0,0],[1,0,1],[0,0,1]],uv:[[0,0],[1,0],[1,1],[0,1]],k:'b'},
@@ -179,7 +211,7 @@ const FAO=FA.map(function(f){var n=f.d;
            cc:[n[0]+su*tu[0]+sv*tv[0],n[1]+su*tu[1]+sv*tv[1],n[2]+su*tu[2]+sv*tv[2]]}})});
 const AOB=[.48,.68,.85,1];
 
-/* ═══ CHUNK MESH ═══ */
+/* ═══════ CHUNK MESH ═══════ */
 const chunks=new Map();let cMat;
 function buildChunk(cx,cy,cz){
   const k=cx+','+cy+','+cz,old=chunks.get(k);
@@ -220,7 +252,7 @@ function buildAll(){const s=new Set();for(const k of Wm.keys()){
   const[x,y,z]=k.split(',').map(Number);s.add(Math.floor(x/CS)+','+Math.floor(y/CS)+','+Math.floor(z/CS))}
   for(const k of s){const[cx,cy,cz]=k.split(',').map(Number);buildChunk(cx,cy,cz)}}
 
-/* ═══ SCENE ═══ */
+/* ═══════ SCENE ═══════ */
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x78b9e8);
 scene.fog=new THREE.Fog(0x78b9e8,50,120);
@@ -249,25 +281,57 @@ const cloudMesh=new THREE.Mesh(new THREE.PlaneGeometry(400,400),
   new THREE.MeshBasicMaterial({map:cloudTex,transparent:true,opacity:.65,side:THREE.DoubleSide,depthWrite:false}));
 cloudMesh.rotation.x=-Math.PI/2;cloudMesh.position.y=55;scene.add(cloudMesh);
 
-/* ═══ PLAYER ═══ */
+/* ═══════ PLAYER ═══════ */
 const PL={pos:new THREE.Vector3(0,30,0),vel:new THREE.Vector3,yaw:0,pitch:0,gnd:false,sel:0,
   hp:20,maxHp:20,regenT:0,hurtT:0};
 const PH=1.62,EY=1.52,HW=.3;
-const keys={};let locked=false,craftOpen=false;
+const keys={};let locked=false,craftOpen=false,invOpen=false;
 
-/* ═══ INVENTORY ═══ */
-const INV=[];for(let i=0;i<9;i++)INV.push({id:0,count:0});
+/* ═══════ INVENTORY (36 slots: 0-8 hotbar, 9-35 main) ═══════ */
+const INV=[];for(let i=0;i<36;i++)INV.push({id:0,count:0});
+let cursorSlot={id:0,count:0};let _mx=0,_my=0;
+
 function invAdd(id,n){if(!id||n<=0)return;
-  for(let i=0;i<9;i++){if(INV[i].id===id&&INV[i].count<64){var a=Math.min(n,64-INV[i].count);
+  for(let i=0;i<36;i++){if(INV[i].id===id&&INV[i].count<64){var a=Math.min(n,64-INV[i].count);
     INV[i].count+=a;n-=a;if(n<=0){updHB();return}}}
-  for(let i=0;i<9;i++){if(INV[i].id===0){INV[i].id=id;INV[i].count=Math.min(n,64);updHB();return}}
+  for(let i=0;i<36;i++){if(INV[i].id===0){var a=Math.min(n,64);
+    INV[i].id=id;INV[i].count=a;n-=a;if(n<=0){updHB();return}}}
   updHB()}
-function invCount(id){let c=0;for(var i=0;i<9;i++)if(INV[i].id===id)c+=INV[i].count;return c}
-function invRm(id,n){for(var i=0;i<9&&n>0;i++){if(INV[i].id===id){
+function invCount(id){let c=0;for(var i=0;i<36;i++)if(INV[i].id===id)c+=INV[i].count;return c}
+function invRm(id,n){for(var i=0;i<36&&n>0;i++){if(INV[i].id===id){
   var r=Math.min(n,INV[i].count);INV[i].count-=r;n-=r;
   if(INV[i].count<=0){INV[i].id=0;INV[i].count=0}}}updHB()}
 
-/* ═══ MONSTERS ═══ */
+/* ═══════ ICON DRAWING ═══════ */
+function drawIsoIcon(cv,bt){var c=BC[bt];if(!c)return;
+  var ctx=cv.getContext('2d'),s=cv.width;ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,s,s);
+  ctx.fillStyle='rgb('+c[0]+','+c[1]+','+c[2]+')';
+  ctx.beginPath();ctx.moveTo(s*.5,s*.08);ctx.lineTo(s*.92,s*.28);ctx.lineTo(s*.5,s*.5);ctx.lineTo(s*.08,s*.28);ctx.closePath();ctx.fill();
+  ctx.fillStyle='rgb('+(c[0]*.6|0)+','+(c[1]*.6|0)+','+(c[2]*.6|0)+')';
+  ctx.beginPath();ctx.moveTo(s*.08,s*.28);ctx.lineTo(s*.5,s*.5);ctx.lineTo(s*.5,s*.92);ctx.lineTo(s*.08,s*.72);ctx.closePath();ctx.fill();
+  ctx.fillStyle='rgb('+(c[0]*.78|0)+','+(c[1]*.78|0)+','+(c[2]*.78|0)+')';
+  ctx.beginPath();ctx.moveTo(s*.92,s*.28);ctx.lineTo(s*.5,s*.5);ctx.lineTo(s*.5,s*.92);ctx.lineTo(s*.92,s*.72);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.2)';ctx.lineWidth=.5;
+  ctx.beginPath();ctx.moveTo(s*.5,s*.08);ctx.lineTo(s*.92,s*.28);ctx.lineTo(s*.5,s*.5);ctx.lineTo(s*.08,s*.28);ctx.closePath();ctx.stroke()}
+function drawToolIcon(cv,id){var ctx=cv.getContext('2d'),s=cv.width;
+  ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,s,s);
+  var S=s/36;
+  if(id===20){ctx.strokeStyle='#B8860B';ctx.lineWidth=4*S;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(12*S,30*S);ctx.lineTo(24*S,6*S);ctx.stroke();return}
+  var tp=TPROP[id];if(!tp)return;
+  var hc=tp.tier==='wood'?'#C49A3A':'#A0A0A0',hd='#8B6914';
+  ctx.strokeStyle=hd;ctx.lineWidth=3*S;ctx.lineCap='round';
+  if(tp.type==='sword'){ctx.beginPath();ctx.moveTo(12*S,30*S);ctx.lineTo(22*S,14*S);ctx.stroke();
+    ctx.strokeStyle=hc;ctx.lineWidth=5*S;ctx.beginPath();ctx.moveTo(14*S,28*S);ctx.lineTo(28*S,4*S);ctx.stroke();
+    ctx.strokeStyle=hd;ctx.lineWidth=3*S;ctx.beginPath();ctx.moveTo(12*S,22*S);ctx.lineTo(20*S,28*S);ctx.stroke()}
+  else{ctx.beginPath();ctx.moveTo(12*S,30*S);ctx.lineTo(24*S,8*S);ctx.stroke();
+    if(tp.type==='pick'){ctx.fillStyle=hc;ctx.fillRect(16*S,3*S,16*S,5*S);
+      ctx.fillRect(14*S,5*S,4*S,5*S);ctx.fillRect(28*S,5*S,4*S,5*S)}
+    else{ctx.fillStyle=hc;ctx.beginPath();ctx.moveTo(18*S,2*S);ctx.lineTo(30*S,6*S);
+      ctx.lineTo(28*S,14*S);ctx.lineTo(16*S,8*S);ctx.closePath();ctx.fill()}}}
+function drawItemTo(cv,id){if(id<20)drawIsoIcon(cv,id);else drawToolIcon(cv,id)}
+
+/* ═══════ MONSTERS ═══════ */
 const mobs=[];
 function spawnZombie(x,y,z){
   const bg=new THREE.BoxGeometry(.55,.85,.3),bm=new THREE.MeshLambertMaterial({color:0x3a7a3a});
@@ -314,7 +378,7 @@ function updateMobs(dt){
     m.eyeR.position.set(m.pos.x+fx*.26-sx*.1,m.pos.y+1.3,m.pos.z+fz*.26-sz*.1);m.eyeR.rotation.y=ang;
     if(dist>60)rmMob(m)}}
 
-/* ═══ COMBAT ═══ */
+/* ═══════ COMBAT ═══════ */
 function findMob(){var dir=new THREE.Vector3(0,0,-1).applyEuler(new THREE.Euler(PL.pitch,PL.yaw,0,'YXZ'));
   var eye=PL.pos.clone();eye.y+=EY;var best=null,bd=REACH+1;
   for(var i=0;i<mobs.length;i++){var m=mobs[i];
@@ -327,39 +391,50 @@ function hitMob(m){var held=INV[PL.sel],tp=TPROP[held.id],dmg=tp?tp.dmg:1;
 function dmgPlayer(d){PL.hp-=d;PL.hurtT=.3;
   document.getElementById('hurt').style.opacity='1';
   setTimeout(function(){document.getElementById('hurt').style.opacity='0'},150);
-  if(PL.hp<=0){PL.hp=PL.maxHp;PL.pos.set(0,gH(0,0)+3,0);PL.vel.set(0,0,0)}
-  updHP()}
+  if(PL.hp<=0){PL.hp=PL.maxHp;PL.pos.set(0,gH(0,0)+3,0);PL.vel.set(0,0,0)}updHP()}
 
-/* ═══ INPUT ═══ */
-document.addEventListener('keydown',function(e){keys[e.code]=true;
-  if(e.code==='KeyE'&&craftOpen)closeCraft()});
+/* ═══════ INPUT ═══════ */
+document.addEventListener('keydown',function(e){
+  if(e.code==='KeyE'){
+    e.preventDefault();
+    if(craftOpen){closeCraft();return}
+    if(invOpen){closeInv();return}
+    if(locked){openInv();return}
+    return}
+  keys[e.code]=true;
+  var n=parseInt(e.key);if(n>=1&&n<=9){PL.sel=n-1;updHB()}});
 document.addEventListener('keyup',function(e){keys[e.code]=false});
 
-/* ★ 核心修复：点击后请求指针锁定，成功时隐藏遮罩 ★ */
 document.getElementById('blocker').addEventListener('click',function(){
   try{var p=renderer.domElement.requestPointerLock();if(p&&p.catch)p.catch(function(){})}catch(e){}});
 
 document.addEventListener('pointerlockchange',function(){
   locked=!!document.pointerLockElement;
-  /* ★ 修复：锁定成功 → 隐藏遮罩；解锁 → 显示遮罩 ★ */
   if(locked){document.getElementById('blocker').style.display='none'}
-  else{if(!craftOpen)document.getElementById('blocker').style.display='flex';
+  else{if(!craftOpen&&!invOpen)document.getElementById('blocker').style.display='flex';
     for(var k in keys)keys[k]=false}});
 
-document.addEventListener('mousemove',function(e){if(!locked)return;
+document.addEventListener('mousemove',function(e){
+  _mx=e.clientX;_my=e.clientY;
+  if(invOpen&&cursorSlot.id>0){
+    var cv=document.getElementById('cursor-item');
+    cv.style.left=(_mx-18)+'px';cv.style.top=(_my-18)+'px'}
+  if(!locked)return;
   PL.yaw-=e.movementX*SENS;
   PL.pitch=Math.max(-Math.PI/2+.01,Math.min(Math.PI/2-.01,PL.pitch-e.movementY*SENS))});
-document.addEventListener('mousedown',function(e){if(!locked||craftOpen)return;
+
+document.addEventListener('mousedown',function(e){
+  if(!locked||craftOpen||invOpen)return;
   if(e.button===0){var m=findMob();if(m){hitMob(m);return}removeBlk()}
   if(e.button===2){var h=raycast();
     if(h&&h.bl===CRAFT){openCraft();return}placeBlk()}});
-document.addEventListener('contextmenu',function(e){e.preventDefault()});
-document.addEventListener('wheel',function(e){if(!locked)return;
-  PL.sel=(PL.sel+Math.sign(e.deltaY)+9)%9;updHB()});
-document.addEventListener('keydown',function(e){var n=parseInt(e.key);
-  if(n>=1&&n<=9){PL.sel=n-1;updHB()}});
 
-/* ═══ RAYCAST ═══ */
+document.addEventListener('contextmenu',function(e){e.preventDefault()});
+document.addEventListener('wheel',function(e){
+  if(!locked||craftOpen||invOpen)return;
+  PL.sel=(PL.sel+Math.sign(e.deltaY)+9)%9;updHB()});
+
+/* ═══════ RAYCAST ═══════ */
 function raycast(){
   const dir=new THREE.Vector3(0,0,-1).applyEuler(new THREE.Euler(PL.pitch,PL.yaw,0,'YXZ'));
   const o=PL.pos.clone();o.y+=EY;
@@ -377,7 +452,7 @@ function raycast(){
       else{if(tmz>REACH)return null;z+=sz;tmz+=tdz;fc=[0,0,-sz]}}}
   return null}
 
-/* ═══ BLOCK INTERACT ═══ */
+/* ═══════ BLOCK INTERACT ═══════ */
 function placeBlk(){const held=INV[PL.sel];if(!held.id||held.id>=20)return;
   const h=raycast();if(!h)return;
   const px=h.x+h.fc[0],py=h.y+h.fc[1],pz=h.z+h.fc[2],p=PL.pos;
@@ -387,7 +462,7 @@ function placeBlk(){const held=INV[PL.sel];if(!held.id||held.id>=20)return;
 function removeBlk(){const h=raycast();if(!h)return;
   sb(h.x,h.y,h.z,0);var d=DROP[h.bl];if(d)invAdd(d,1);rebuildAt(h.x,h.y,h.z)}
 
-/* ═══ PHYSICS ═══ */
+/* ═══════ PHYSICS ═══════ */
 function collide(p){
   for(let x=Math.floor(p.x-HW);x<=Math.floor(p.x+HW);x++)
     for(let y=Math.floor(p.y);y<=Math.floor(p.y+PH);y++)
@@ -414,7 +489,7 @@ function updatePlayer(dt){
   camera.position.set(PL.pos.x,PL.pos.y+EY,PL.pos.z);
   camera.rotation.order='YXZ';camera.rotation.set(PL.pitch,PL.yaw,0)}
 
-/* ═══ DAY/NIGHT ═══ */
+/* ═══════ DAY/NIGHT ═══════ */
 let gameTime=60;const DAY_LEN=180;
 const _dayC=new THREE.Color(0x78b9e8),_nightC=new THREE.Color(0x0a0a2a);
 function updateDayNight(dt){
@@ -430,7 +505,7 @@ function updateDayNight(dt){
     var sy=gH(Math.floor(sx),Math.floor(sz))+1;
     spawnZombie(sx,sy,sz)}}
 
-/* ═══ CRAFTING UI ═══ */
+/* ═══════ CRAFTING UI ═══════ */
 function openCraft(){craftOpen=true;document.getElementById('craft-ui').style.display='block';
   document.exitPointerLock();renderCraft()}
 function closeCraft(){craftOpen=false;document.getElementById('craft-ui').style.display='none';
@@ -441,59 +516,106 @@ function renderCraft(){
     var ok=r.r.every(function(q){return invCount(q[0])>=q[1]});
     var div=document.createElement('div');div.className='recipe'+(ok?'':' disabled');
     var cv=document.createElement('canvas');cv.width=cv.height=32;
-    if(r.o<20)drawIsoIcon(cv,r.o);else drawToolIcon(cv,r.o);
-    div.appendChild(cv);
+    drawItemTo(cv,r.o);div.appendChild(cv);
     var info=document.createElement('div');info.className='rinfo';
     var nm=document.createElement('div');nm.className='rname';
     nm.textContent=ITN[r.o]+' \u00d7'+r.n;info.appendChild(nm);
     var nd=document.createElement('div');nd.className='rneed';
     nd.textContent=r.r.map(function(q){return q[1]+'\u00d7 '+ITN[q[0]]}).join(', ');
     info.appendChild(nd);div.appendChild(info);
-    var btn=document.createElement('button');btn.textContent='Craft';
-    btn.disabled=!ok;
+    var btn=document.createElement('button');btn.textContent='Craft';btn.disabled=!ok;
     btn.onclick=function(){craft(r);renderCraft()};
     div.appendChild(btn);el.appendChild(div)})(RCP[ri])}}
 function craft(r){if(!r.r.every(function(q){return invCount(q[0])>=q[1]}))return;
   r.r.forEach(function(q){invRm(q[0],q[1])});invAdd(r.o,r.n)}
 
-/* ═══ UI ═══ */
-function drawIsoIcon(cv,bt){
-  var c=BC[bt];if(!c)return;
-  var ctx=cv.getContext('2d'),s=cv.width;ctx.imageSmoothingEnabled=false;
-  ctx.clearRect(0,0,s,s);
-  ctx.fillStyle='rgb('+c[0]+','+c[1]+','+c[2]+')';
-  ctx.beginPath();ctx.moveTo(s*.5,s*.08);ctx.lineTo(s*.92,s*.28);ctx.lineTo(s*.5,s*.5);ctx.lineTo(s*.08,s*.28);ctx.closePath();ctx.fill();
-  ctx.fillStyle='rgb('+(c[0]*.6|0)+','+(c[1]*.6|0)+','+(c[2]*.6|0)+')';
-  ctx.beginPath();ctx.moveTo(s*.08,s*.28);ctx.lineTo(s*.5,s*.5);ctx.lineTo(s*.5,s*.92);ctx.lineTo(s*.08,s*.72);ctx.closePath();ctx.fill();
-  ctx.fillStyle='rgb('+(c[0]*.78|0)+','+(c[1]*.78|0)+','+(c[2]*.78|0)+')';
-  ctx.beginPath();ctx.moveTo(s*.92,s*.28);ctx.lineTo(s*.5,s*.5);ctx.lineTo(s*.5,s*.92);ctx.lineTo(s*.92,s*.72);ctx.closePath();ctx.fill();
-  ctx.strokeStyle='rgba(0,0,0,.2)';ctx.lineWidth=.5;
-  ctx.beginPath();ctx.moveTo(s*.5,s*.08);ctx.lineTo(s*.92,s*.28);ctx.lineTo(s*.5,s*.5);ctx.lineTo(s*.08,s*.28);ctx.closePath();ctx.stroke()}
-function drawToolIcon(cv,id){
-  var ctx=cv.getContext('2d'),s=cv.width;ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,s,s);
-  var S=s/36;
-  if(id===20){ctx.strokeStyle='#B8860B';ctx.lineWidth=4*S;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(12*S,30*S);ctx.lineTo(24*S,6*S);ctx.stroke();return}
-  var tp=TPROP[id];if(!tp)return;
-  var hc=tp.tier==='wood'?'#C49A3A':'#A0A0A0',hd='#8B6914';
-  ctx.strokeStyle=hd;ctx.lineWidth=3*S;ctx.lineCap='round';
-  if(tp.type==='sword'){ctx.beginPath();ctx.moveTo(12*S,30*S);ctx.lineTo(22*S,14*S);ctx.stroke();
-    ctx.strokeStyle=hc;ctx.lineWidth=5*S;ctx.beginPath();ctx.moveTo(14*S,28*S);ctx.lineTo(28*S,4*S);ctx.stroke();
-    ctx.strokeStyle=hd;ctx.lineWidth=3*S;ctx.beginPath();ctx.moveTo(12*S,22*S);ctx.lineTo(20*S,28*S);ctx.stroke()}
-  else{ctx.beginPath();ctx.moveTo(12*S,30*S);ctx.lineTo(24*S,8*S);ctx.stroke();
-    if(tp.type==='pick'){ctx.fillStyle=hc;ctx.fillRect(16*S,3*S,16*S,5*S);
-      ctx.fillRect(14*S,5*S,4*S,5*S);ctx.fillRect(28*S,5*S,4*S,5*S)}
-    else{ctx.fillStyle=hc;ctx.beginPath();ctx.moveTo(18*S,2*S);ctx.lineTo(30*S,6*S);
-      ctx.lineTo(28*S,14*S);ctx.lineTo(16*S,8*S);ctx.closePath();ctx.fill()}}}
-function updHB(){var el=document.getElementById('hotbar');el.innerHTML='';
-  INV.forEach(function(slot,i){
+/* ═══════ INVENTORY UI ═══════ */
+function openInv(){invOpen=true;
+  document.getElementById('inv-ui').style.display='block';
+  document.exitPointerLock();renderInv();showCursorItem()}
+function closeInv(){invOpen=false;
+  document.getElementById('inv-ui').style.display='none';
+  if(cursorSlot.id>0){invAdd(cursorSlot.id,cursorSlot.count);cursorSlot.id=0;cursorSlot.count=0;hideCursorItem()}
+  try{var p=renderer.domElement.requestPointerLock();if(p&&p.catch)p.catch(function(){})}catch(e){}}
+
+function renderInv(){
+  var main=document.getElementById('inv-main');main.innerHTML='';
+  for(var i=9;i<36;i++)main.appendChild(mkSlot(i));
+  var hot=document.getElementById('inv-hot');hot.innerHTML='';
+  for(var i=0;i<9;i++)hot.appendChild(mkSlot(i))}
+
+function mkSlot(idx){
+  var slot=INV[idx];
+  var div=document.createElement('div');
+  div.className='inv-slot'+(idx===PL.sel&&idx<9?' sel':'');
+  div.title=slot.id>0?ITN[slot.id]:'';
+  div.onmousedown=function(e){e.preventDefault();
+    if(e.shiftKey){invQuickMove(idx);return}
+    invClick(idx,e.button)};
+  var cv=document.createElement('canvas');cv.width=cv.height=36;
+  if(slot.id>0)drawItemTo(cv,slot.id);div.appendChild(cv);
+  if(slot.count>1){var ct=document.createElement('span');ct.className='cnt';
+    ct.textContent=slot.count;div.appendChild(ct)}
+  return div}
+
+function invClick(idx,btn){
+  var s=INV[idx];
+  if(btn===0){/* left click */
+    if(cursorSlot.id===0){cursorSlot.id=s.id;cursorSlot.count=s.count;s.id=0;s.count=0}
+    else if(s.id===0){s.id=cursorSlot.id;s.count=cursorSlot.count;cursorSlot.id=0;cursorSlot.count=0}
+    else if(s.id===cursorSlot.id&&s.count<64){
+      var a=Math.min(cursorSlot.count,64-s.count);s.count+=a;cursorSlot.count-=a;
+      if(cursorSlot.count<=0){cursorSlot.id=0;cursorSlot.count=0}}
+    else{var ti=s.id,tc=s.count;s.id=cursorSlot.id;s.count=cursorSlot.count;cursorSlot.id=ti;cursorSlot.count=tc}}
+  else if(btn===2){/* right click */
+    if(cursorSlot.id===0&&s.id>0){var half=Math.ceil(s.count/2);
+      cursorSlot.id=s.id;cursorSlot.count=half;s.count-=half;
+      if(s.count<=0)s.id=0}
+    else if(cursorSlot.id>0){
+      if(s.id===0){s.id=cursorSlot.id;s.count=1;cursorSlot.count--}
+      else if(s.id===cursorSlot.id&&s.count<64){s.count++;cursorSlot.count--}
+      if(cursorSlot.count<=0){cursorSlot.id=0;cursorSlot.count=0}}}
+  showCursorItem();renderInv();updHB()}
+
+function invQuickMove(idx){
+  var s=INV[idx];if(s.id===0)return;
+  var start,idxEnd;
+  if(idx<9){start=9;idxEnd=36}else{start=0;idxEnd=9}
+  /* try stack */
+  for(var i=start;i<idxEnd;i++){
+    if(INV[i].id===s.id&&INV[i].count<64){
+      var a=Math.min(s.count,64-INV[i].count);INV[i].count+=a;s.count-=a;
+      if(s.count<=0){s.id=0;s.count=0;renderInv();updHB();return}}}
+  /* find empty */
+  for(var i=start;i<idxEnd;i++){
+    if(INV[i].id===0){INV[i].id=s.id;INV[i].count=s.count;s.id=0;s.count=0;
+      renderInv();updHB();return}}
+  renderInv();updHB()}
+
+function showCursorItem(){
+  var cv=document.getElementById('cursor-item');
+  if(cursorSlot.id===0){cv.style.display='none';return}
+  cv.style.display='block';
+  cv.style.left=(_mx-18)+'px';cv.style.top=(_my-18)+'px';
+  drawItemTo(cv,cursorSlot.id);
+  if(cursorSlot.count>1){
+    var ctx=cv.getContext('2d');
+    ctx.fillStyle='#fff';ctx.font='bold 11px monospace';
+    ctx.textAlign='right';ctx.textBaseline='bottom';
+    ctx.strokeStyle='#000';ctx.lineWidth=2;
+    ctx.strokeText(cursorSlot.count,34,35);ctx.fillText(cursorSlot.count,34,35)}}
+function hideCursorItem(){document.getElementById('cursor-item').style.display='none'}
+
+/* ═══════ HUD ═══════ */
+function updHB(){
+  var el=document.getElementById('hotbar');el.innerHTML='';
+  for(var i=0;i<9;i++){var slot=INV[i];
     var s=document.createElement('div');s.className='slot'+(i===PL.sel?' active':'');
     var cv=document.createElement('canvas');cv.width=cv.height=36;
-    if(slot.id>0){if(slot.id<20)drawIsoIcon(cv,slot.id);else drawToolIcon(cv,slot.id)}
-    s.appendChild(cv);
+    if(slot.id>0)drawItemTo(cv,slot.id);s.appendChild(cv);
     if(slot.count>1){var ct=document.createElement('span');ct.className='count';
       ct.textContent=slot.count;s.appendChild(ct)}
-    el.appendChild(s)});
+    el.appendChild(s)}
   var held=INV[PL.sel];
   document.getElementById('bname').textContent=held.id>0?ITN[held.id]:''}
 function updHP(){var s='';for(var i=0;i<10;i++)s+=PL.hp>i*2?'\u2665':'\u2661';
@@ -505,11 +627,11 @@ function updInfo(dt){_fc++;_ft+=dt;if(_ft>=1){_fps=_fc;_fc=0;_ft-=1}
     'FPS: '+_fps+'\nXYZ: '+PL.pos.x.toFixed(1)+' / '+PL.pos.y.toFixed(1)+' / '+PL.pos.z.toFixed(1)+
     '\nMobs: '+mobs.length}
 
-/* ═══ LOOP ═══ */
+/* ═══════ LOOP ═══════ */
 let lt=performance.now();
 function loop(){requestAnimationFrame(loop);
   const now=performance.now(),dt=Math.min((now-lt)/1000,.1);lt=now;
-  if(locked&&!craftOpen){
+  if(locked&&!craftOpen&&!invOpen){
     updatePlayer(dt);updateMobs(dt);updateDayNight(dt);
     PL.regenT-=dt;if(PL.regenT<=0&&PL.hp<PL.maxHp){PL.hp++;PL.regenT=3;updHP()}
     var h=raycast();
@@ -517,12 +639,15 @@ function loop(){requestAnimationFrame(loop);
   cloudTex.offset.x=now*.00002;
   updInfo(dt);renderer.render(scene,camera)}
 
-/* ═══ INIT ═══ */
+/* ═══════ INIT ═══════ */
 try{
   genWorld();PL.pos.set(0,gH(0,0)+3,0);buildAll();
   INV[0]={id:GRASS,count:64};INV[1]={id:DIRT,count:64};INV[2]={id:STONE,count:64};
   INV[3]={id:WOOD,count:64};INV[4]={id:PLANKS,count:64};INV[5]={id:CRAFT,count:3};
   INV[6]={id:COBBLE,count:64};INV[7]={id:STICK,count:16};INV[8]={id:W_SWORD,count:1};
+  INV[9]={id:S_PICK,count:1};INV[10]={id:S_AXE,count:1};INV[11]={id:SNOW,count:64};
+  INV[12]={id:SAND,count:64};INV[13]={id:LEAVES,count:32};INV[14]={id:W_PICK,count:1};
+  INV[15]={id:W_AXE,count:1};
   updHB();updHP();
   addEventListener('resize',function(){camera.aspect=innerWidth/innerHeight;
     camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
