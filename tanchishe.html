@@ -191,14 +191,16 @@ h2.state{font-family:var(--disp);font-size:28px;font-weight:600;line-height:1.1;
 .instr b{color:var(--ink);font-weight:500}
 
 /* ---------- touch pad ---------- */
-.pad{display:none;margin-top:16px;justify-content:center;gap:6px}
+.pad{display:none;margin-top:20px;justify-content:center;gap:8px}
 .pbtn{
-  width:48px;height:48px;display:grid;place-items:center;background:var(--s1);
-  border:1px solid var(--bd);border-radius:4px;color:var(--ink);cursor:pointer;padding:0
+  width:64px;height:64px;display:grid;place-items:center;background:rgba(30,35,45,0.9);
+  border:2px solid rgba(100,120,140,0.4);border-radius:12px;color:#c8d0dc;cursor:pointer;padding:0;
+  font-size:24px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  transition:background 0.1s,border-color 0.1s
 }
-.pbtn:active{background:var(--s2);border-color:var(--lime);color:var(--lime)}
+.pbtn:active{background:rgba(80,200,120,0.3);border-color:rgba(80,200,120,0.8);color:#50c878}
 .pbtn:focus-visible{outline:2px solid var(--lime);outline-offset:3px}
-.pad .grid{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,48px);gap:6px}
+.pad .grid{display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(2,64px);gap:8px}
 .pad .u{grid-column:2;grid-row:1}
 .pad .l{grid-column:1;grid-row:2}
 .pad .d{grid-column:2;grid-row:2}
