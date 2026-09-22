@@ -211,7 +211,7 @@ h2.state{font-family:var(--disp);font-size:28px;font-weight:600;line-height:1.1;
 /* ---------- responsive ---------- */
 @media (max-width:1100px){ .hero{font-size:54px} }
 @media (max-width:700px){
-  body{padding:16px}
+  body{padding:16px;padding-bottom:180px}
   .shell{min-height:calc(100vh - 32px)}
   .sysid{display:none}
   .main{grid-template-columns:1fr;gap:16px;padding-top:16px}
@@ -228,8 +228,10 @@ h2.state{font-family:var(--disp);font-size:28px;font-weight:600;line-height:1.1;
   h2.state{font-size:24px}
   .body-copy{font-size:14px;margin-bottom:18px}
   .hint{display:none}
-  .board{max-height:50vh;aspect-ratio:auto;height:auto}
-  .pad{display:flex;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:50;background:rgba(0,0,0,0.6);padding:12px;border-radius:16px}
+  .board{height:45vh;aspect-ratio:auto}
+  .pad{display:flex!important;visibility:visible!important;position:fixed!important;bottom:20px!important;left:50%!important;transform:translateX(-50%)!important;z-index:9999!important;background:rgba(20,25,20,0.95)!important;padding:16px!important;border-radius:20px!important;border:2px solid rgba(100,120,80,0.4)!important;box-shadow:0 4px 20px rgba(0,0,0,0.5)!important}
+  .pad .grid{gap:10px!important}
+  .pbtn{width:70px!important;height:70px!important;font-size:28px!important;border-radius:16px!important}
   .btn{padding:0 18px}
 }
 @media (max-width:390px){
