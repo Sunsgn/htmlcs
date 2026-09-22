@@ -228,10 +228,7 @@ h2.state{font-family:var(--disp);font-size:28px;font-weight:600;line-height:1.1;
   h2.state{font-size:24px}
   .body-copy{font-size:14px;margin-bottom:18px}
   .hint{display:none}
-  .board{height:45vh;aspect-ratio:auto}
-  .pad{display:flex!important;visibility:visible!important;position:fixed!important;bottom:20px!important;left:50%!important;transform:translateX(-50%)!important;z-index:9999!important;background:rgba(20,25,20,0.95)!important;padding:16px!important;border-radius:20px!important;border:2px solid rgba(100,120,80,0.4)!important;box-shadow:0 4px 20px rgba(0,0,0,0.5)!important}
-  .pad .grid{gap:10px!important}
-  .pbtn{width:70px!important;height:70px!important;font-size:28px!important;border-radius:16px!important}
+  .board{height:40vh;aspect-ratio:auto}
   .btn{padding:0 18px}
 }
 @media (max-width:390px){
@@ -889,6 +886,18 @@ function boot(){
 boot();
 
 })();
+</script>
+<div id="mobile-pad" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;background:rgba(20,25,20,0.95);padding:16px;border-radius:20px;border:2px solid rgba(100,120,80,0.4);box-shadow:0 4px 20px rgba(0,0,0,0.5)">
+  <div style="display:grid;grid-template-columns:repeat(3,70px);grid-template-rows:repeat(2,70px);gap:10px">
+    <button onclick="queueDir(0,-1)" style="grid-column:2;grid-row:1;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▲</button>
+    <button onclick="queueDir(-1,0)" style="grid-column:1;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">◀</button>
+    <button onclick="queueDir(0,1)" style="grid-column:2;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▼</button>
+    <button onclick="queueDir(1,0)" style="grid-column:3;grid-row:2;width:70px;height:70px;font-size:28px;border-radius:16px;border:2px solid rgba(100,120,80,0.5);background:rgba(40,50,35,0.9);color:#c8d0dc;cursor:pointer">▶</button>
+  </div>
+</div>
+<script>
+if(window.innerWidth<=700){document.getElementById('mobile-pad').style.display='block';}
+window.addEventListener('resize',function(){document.getElementById('mobile-pad').style.display=window.innerWidth<=700?'block':'none';});
 </script>
 </body>
 </html>
