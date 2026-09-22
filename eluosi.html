@@ -91,7 +91,7 @@
     }
     canvas#board {
       width: 250px;
-      height: 500px;
+      height: 400px;
     }
     .side-panel {
       flex-direction: row;
@@ -113,6 +113,14 @@
       flex-direction: column;
       align-items: center;
       gap: 0.5rem;
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      background: rgba(0,0,0,0.6);
+      padding: 12px;
+      border-radius: 16px;
     }
   }
   .back-home{position:fixed;top:10px;left:10px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.25);color:#fff;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
